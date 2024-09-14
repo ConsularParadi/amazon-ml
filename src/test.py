@@ -3,7 +3,7 @@ import numpy as np
 import os
 from ocr import OCR
 from postprocess import Postprocess
-from utils import DataLoader
+from myutils import DataLoader
 
 DATA_DIR = "../data"
 IMAGE_DIR = "../images"
