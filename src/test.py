@@ -1,13 +1,13 @@
 import pandas as pd
 import numpy as np
-
+import os
 from ocr import OCR
 from postprocess import Postprocess
 from utils import DataLoader
 
-DATA_DIR = "./data"
-IMAGE_DIR = "./images"
-RESULT_DIR = "./results"
+DATA_DIR = "../data"
+IMAGE_DIR = "../images"
+RESULT_DIR = "../results"
 
 ocr = OCR()
 postprocess = Postprocess()

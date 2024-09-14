@@ -1,6 +1,43 @@
 import re
 import pandas as pd
 
+unit_standardization = {
+    'cm': 'centimetre',
+    'mm': 'millimetre',
+    'm': 'metre',
+    'ft': 'foot',
+    'in': 'inch',
+    'yd': 'yard',
+    'g': 'gram',
+    'kg': 'kilogram',
+    'mg': 'milligram',
+    'µg': 'microgram',
+    'oz': 'ounce',
+    'lb': 'pound',
+    't': 'ton',
+    'ml': 'millilitre',
+    'l': 'litre',
+    'kv': 'kilovolt',
+    'mv': 'millivolt',
+    'v': 'volt',
+    'kw': 'kilowatt',
+    'w': 'watt'
+}
+
+# entity to unit mapping
+entity_unit_map = {
+    'width': {'centimetre', 'foot', 'inch', 'metre', 'millimetre', 'yard'},
+    'depth': {'centimetre', 'foot', 'inch', 'metre', 'millimetre', 'yard'},
+    'height': {'centimetre', 'foot', 'inch', 'metre', 'millimetre', 'yard'},
+    'item_weight': {'gram', 'kilogram', 'microgram', 'milligram', 'ounce', 'pound', 'ton'},
+    'maximum_weight_recommendation': {'gram', 'kilogram', 'microgram', 'milligram', 'ounce', 'pound', 'ton'},
+    'voltage': {'kilovolt', 'millivolt', 'volt'},
+    'wattage': {'kilowatt', 'watt'},
+    'item_volume': {'centilitre', 'cubic foot', 'cubic inch', 'cup', 'decilitre', 'fluid ounce', 'gallon', 
+                    'imperial gallon', 'litre', 'microlitre', 'millilitre', 'pint', 'quart'}
+}
+
+
 class Postprocess:
     def __init__(self):
         pass
