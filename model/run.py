@@ -11,25 +11,31 @@ from utils import batch_iterator
 from preprocess import combine_cols, preprocess_data
 from model import FlanT5FineTuner
 
-train = pd.read_csv('train.csv')
-train = train[:20000]
+train = pd.read_csv('./train.csv')
+train = train[:200]
+processed_train = pd.DataFrame()
 
 for batch_df in batch_iterator(train, batch_size=512):
     batch_df['model_input'] = batch_df.apply(combine_cols, axis=1)
+    processed_train = pd.concat([processed_train, batch_df], ignore_index=True)  # Concatenate each processed batch
 
-train.to_csv('train_preprocessed.csv', index=False)
+processed_train.to_csv('train_preprocessed.csv', index=False)
 
 # Load your data
-train_dataset = load_dataset('csv', data_files='train_preprocessed.csv')
+train_dataset = load_dataset('csv', data_files='train_preprocessed.csv')["train"]
 tokenizer = T5Tokenizer.from_pretrained("google/flan-t5-base")
 
 # Apply preprocessing
 train_dataset = train_dataset.map(lambda x: preprocess_data(x, tokenizer), batched=True)
 
-train_dataset.set_format(type='torch', columns=['input_ids', 'attention_mask', 'labels'])
+# train_dataset.set_format(type='torch', columns=['input_ids', 'attention_mask', 'labels'])
 
 train_size = 0.8  # 80% for training, 20% for validation
-train_data, val_data = train_test_split(train_dataset, train_size=train_size)
+split_dataset = train_dataset.train_test_split(train_size=train_size)
+
+# Extract train and validation sets
+train_data = split_dataset['train']
+val_data = split_dataset['test']
 
 
 # Convert the train and validation datasets to PyTorch Dataset if not already
@@ -41,7 +47,12 @@ class CustomDataset(Dataset):
         return len(self.dataset)
 
     def __getitem__(self, idx):
-        return self.dataset[idx]
+        item = self.dataset[idx]
+        # Convert list to tensor
+        item["input_ids"] = torch.tensor(item["input_ids"])
+        item["attention_mask"] = torch.tensor(item["attention_mask"])
+        item["labels"] = torch.tensor(item["labels"])
+        return item
 
 # Create DataLoader for both train and validation sets
 train_dataloader = DataLoader(CustomDataset(train_data), batch_size=8, shuffle=True)
@@ -60,8 +71,7 @@ checkpoint_callback = ModelCheckpoint(
 
 # Trainer
 trainer = Trainer(
-    max_epochs=4,
-    gpus=1,  # Or use multiple GPUs with "gpus=-1"
+    max_epochs=1,
     callbacks=[checkpoint_callback]
 )
 
@@ -69,4 +79,4 @@ trainer = Trainer(
 trainer.fit(model, train_dataloaders=train_dataloader, val_dataloaders=val_dataloader)
 
 best_model_path = checkpoint_callback.best_model_path
-model = FlanT5FineTuner.load_from_checkpoint(best_model_path)
+# model = FlanT5FineTuner.load_from_checkpoint(best_model_path)

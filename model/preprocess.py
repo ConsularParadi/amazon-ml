@@ -1,4 +1,5 @@
 import re
+import sys
 
 entity_unit_map = {
     'width': {'centimetre': 'cm', 'foot': 'ft', 'inch': 'in', 'metre': 'm', 'millimetre': 'mm', 'yard': 'yd'},
@@ -30,18 +31,21 @@ def regex(text, entity_type):
     pattern = rf'(\d+(?:\.\d+)?)\s*({unit_pattern})'
     
     # Find all matches in the text
-    matches = re.findall(pattern, text.lower())
+    try: 
+        matches = re.findall(pattern, text.lower())
+    except:
+        return ""
     
     # If matches are found, return the first match as a string (e.g., '34 gram')
     if matches:
         return f"{matches[0][0]} {matches[0][1]}"
     
     return ""
-
+    
 def combine_cols(row):
     # Extract measurement from OCR output using regex
     ocr_text = row['output']
-    extracted_measurement = regex(ocr_text)
+    extracted_measurement = regex(ocr_text, row["entity_name"])
     
     # Combine relevant columns (e.g., measurement type + OCR text)
     combined_text = f"Type: {row['entity_name']} | OCR: {ocr_text} | Extracted Measurement: {extracted_measurement}"
